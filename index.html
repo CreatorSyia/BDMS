@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>혹한기 서울 생존기</title>
+    <style>
+        /* 기본 설정 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Malgun Gothic', sans-serif;
+        }
+        body {
+            background-color: #0b1016; /* 짙은 어둠 */
+            color: #dbe5f0; /* 창백한 얼음색 */
+            overflow-x: hidden;
+        }
+        ul {
+            list-style: none;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* --- 인트로 구역 --- */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1.5s ease-in-out;
+        }
+        
+        /* 시작 버튼 */
+        #start-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00c8ff;
+            background: transparent;
+            border: 2px solid #00c8ff;
+            box-shadow: 0 0 15px rgba(0, 200, 255, 0.3), inset 0 0 10px rgba(0, 200, 255, 0.2);
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        #start-btn:hover {
+            background: #00c8ff;
+            color: #000;
+            box-shadow: 0 0 25px rgba(0, 200, 255, 0.6);
+        }
+
+        /* 눈보라 효과 (CSS 그라데이션 이동) */
+        #blizzard-effect {
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.8) 60%, transparent 100%);
+            opacity: 0;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* 얼어붙은 서울 배경 */
+        #frozen-seoul-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 실제 이미지 경로로 대체하세요 */
+            background: url('https://images.unsplash.com/photo-1542382156909-9ae37b3f56fd?q=80&w=1920&auto=format&fit=crop') no-repeat center center/cover;
+            opacity: 0;
+            z-index: 1;
+            filter: grayscale(80%) contrast(120%) brightness(50%);
+        }
+
+        /* 애니메이션 클래스 */
+        .blizzard-active {
+            animation: blowSnow 2.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+            opacity: 1 !important;
+        }
+        @keyframes blowSnow {
+            0% { left: -150%; opacity: 0; }
+            30% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        /* --- 메인 페이지 구역 --- */
+        #main-content {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s ease-in-out;
+        }
+        
+        /* 상단 메뉴바 */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(11, 16, 22, 0.9);
+            border-bottom: 1px solid #1c2533;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        header .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00c8ff;
+            cursor: pointer;
+        }
+        nav ul {
+            display: flex;
+            gap: 30px;
+        }
+        nav ul li a {
+            font-size: 1rem;
+            color: #8c9baf;
+            transition: color 0.3s;
+        }
+        nav ul li a:hover {
+            color: #dbe5f0;
+        }
+
+        /* 콘텐츠 영역 공통 */
+        section {
+            padding: 80px 40px;
+            min-height: 50vh;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h2 {
+            font-size: 2rem;
+            color: #ffffff;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #1c2533;
+            padding-bottom: 10px;
+        }
+        h3 {
+            font-size: 1.3rem;
+            color: #00c8ff;
+            margin-bottom: 10px;
+        }
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #a4b5c8;
+        }
+
+        /* 세력 소개 그리드 레이아웃 */
+        .faction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .faction-card {
+            background: #121822;
+            border: 1px solid #1c2533;
+            padding: 20px;
+            transition: transform 0.3s;
+        }
+        .faction-card:hover {
+            transform: translateY(-5px);
+            border-color: #00c8ff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 가. 인트로 페이지 -->
+    <div id="intro-screen">
+        <button id="start-btn">시작하기</button>
+        <div id="blizzard-effect"></div>
+        <div id="frozen-seoul-bg"></div>
+    </div>
+
+    <!-- 나. 메인 페이지 -->
+    <div id="main-content">
+        <!-- 상단 메뉴바 -->
+        <header>
+            <div class="logo" id="logo-btn">PROJECT: WINTER</div>
+            <nav>
+                <ul>
+                    <li><a href="#worldview">세계관</a></li>
+                    <li><a href="#factions">세력 소개</a></li>
+                    <li><a href="#characters">인물 소개</a></li>
+                    <li><a href="#map">지도 정보</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- 세계관 구역 -->
+        <section id="worldview">
+            <h2>세계관</h2>
+            <p><strong>2125년 1월 1일 0시</strong>, 새해를 알리는 보신각 타종과 함께 백두산이 분화했다. 하늘을 빽빽하게 뒤덮은 화산재는 태양을 가렸고, 한반도 일대에 심각한 혹한기를 불러왔다.</p>
+            <p>극심한 추위 속에 대부분의 전기와 수도 시설은 동파되어 그 기능을 멈추었다. 설상가상으로 모종의 이유로 발생한 거대한 눈보라가 서울 전역을 거대한 장벽처럼 둘러싸며 외부로의 이동이 완벽하게 차단되었다.</p>
+            <p>그로부터 일주일이 지난 <strong>2125년 1월 8일 오전 7시 37분</strong>. 얼어붙은 잿빛 도시 속에서 살아남은 생존자들은 각자의 무리를 지어 세력을 형성하고, 무너진 질서 대신 새로운 생존의 법칙 아래 놓이게 되었다. 당신의 이야기는 바로 이곳에서 시작된다.</p>
+        </section>
+
+        <!-- 세력 소개 구역 -->
+        <section id="factions">
+            <h2>세력 소개</h2>
+            <div class="faction-grid">
+                <div class="faction-card">
+                    <h3>정부</h3>
+                    <p>백두산 분화 이후 절체절명의 위기에 처한 기존 대한민국의 국가 통치 집단. 국가 체제와 사회 질서의 회복을 꾀하고 있으며, 군대에 대한 통솔권이 여전히 어느 정도 유지되어 있다.</p>
+                </div>
+                <div class="faction-card">
+                    <h3>군대</h3>
+                    <p>여전히 정부 산하에 소속된 무력 조직. 질서 유지라는 명목하에 움직이는 정부의 사냥개 역할을 수행한다.</p>
+                </div>
+                <div class="faction-card">
+                    <h3>경찰</h3>
+                    <p>정부 산하의 치안 유지 조직. 사냥개인 군대와 달리, 세세한 일을 도맡아 하는 정부의 심부름꾼에 가깝다.</p>
+                </div>
+                <div class="faction-card">
+                    <h3>서울대피소</h3>
+                    <p>백두산 분화로부터 살아남은 생존자들이 자생적으로 모여 이룬 집단. 정부와 프로스트 사이에서 철저히 중립적인 입장을 취하며 오직 생존에 전념한다.</p>
+                </div>
+                <div class="faction-card">
+                    <h3>프로스트</h3>
+                    <p>기존 정부 체제를 완전히 무너뜨리고 새로운 사회 질서를 세우고자 하는 무장집단. 정부 세력에 극도로 적대적이다.</p>
+                </div>
+                <div class="faction-card">
+                    <h3>시아교</h3>
+                    <p>백두산 분화 이후 새롭게 등장한 맹신적인 사이비 종교 집단. 서울대피소, 정부, 프로스트 등 기존의 모든 세력을 적대시한다.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 임시: 인물/지도 구역 (나중에 내용 추가 예정) -->
+        <section id="characters">
+            <h2>인물 소개</h2>
+            <p>세부 내용 업데이트 예정...</p>
+        </section>
+
+        <section id="map">
+            <h2>지도 정보</h2>
+            <p>세부 내용 업데이트 예정...</p>
+        </section>
+    </div>
+
+    <!-- 애니메이션 및 스크롤 동작 스크립트 -->
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const introScreen = document.getElementById('intro-screen');
+        const blizzard = document.getElementById('blizzard-effect');
+        const frozenBg = document.getElementById('frozen-seoul-bg');
+        const mainContent = document.getElementById('main-content');
+        const logoBtn = document.getElementById('logo-btn');
+
+        // 시작하기 버튼 클릭 시 이벤트
+        startBtn.addEventListener('click', () => {
+            // 1. 버튼 숨기기
+            startBtn.style.display = 'none';
+            
+            // 2. 눈보라 애니메이션 시작
+            blizzard.classList.add('blizzard-active');
+            
+            // 3. 눈보라가 화면을 가리는 타이밍(약 0.8초 후)에 배경 이미지 표시
+            setTimeout(() => {
+                frozenBg.style.opacity = '1';
+            }, 800);
+
+            // 4. 애니메이션이 끝날 즈음(약 3초 후) 인트로를 숨기고 메인 페이지 표시
+            setTimeout(() => {
+                introScreen.style.opacity = '0';
+                
+                // 메인 페이지 페이드 인
+                mainContent.style.visibility = 'visible';
+                mainContent.style.opacity = '1';
+
+                // 인트로 스크린 완전히 DOM에서 제거(클릭 방지)
+                setTimeout(() => {
+                    introScreen.style.display = 'none';
+                }, 1500);
+
+            }, 3000);
+        });
+
+        // 로고 클릭 시 페이지 최상단으로 부드럽게 스크롤
+        logoBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>
